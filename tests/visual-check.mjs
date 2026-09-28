@@ -9,7 +9,7 @@ for (const [name, width, height] of [['desktop', 1440, 900], ['mobile', 390, 844
   const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 1 });
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
-  await page.goto('http://127.0.0.1:8000/', { waitUntil: 'networkidle' });
+  await page.goto('http://127.0.0.1:8765/', { waitUntil: 'networkidle' });
   await page.locator('.visual-feature').scrollIntoViewIfNeeded();
   await page.locator('.team').scrollIntoViewIfNeeded();
   await page.locator('footer').scrollIntoViewIfNeeded();
