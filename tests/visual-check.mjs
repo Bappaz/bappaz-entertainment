@@ -33,6 +33,7 @@ for (const [name, width, height] of [['desktop', 1440, 900], ['mobile', 390, 844
   if (name === 'mobile') {
     await page.locator('.menu').click();
     result.mobileNavOpens = await page.locator('#primary-nav').isVisible();
+    await page.locator('.menu').click();
   }
   await page.locator('input[name=name]').fill('Preview Test');
   await page.locator('input[name=email]').fill('preview@example.com');
@@ -50,6 +51,11 @@ for (const [name, width, height] of [['desktop', 1440, 900], ['mobile', 390, 844
   ];
   console.log(name, JSON.stringify({ url: page.url(), ...result, problems }));
   if (problems.length) failed = true;
+  for (const route of ['the-new-bench.html', 'auditions.html']) {
+    await page.goto(pathToFileURL(path.resolve(route)).href, { waitUntil: 'load' });
+    const routeProblems = await page.evaluate(() => ({ overflow: document.documentElement.scrollWidth > innerWidth + 1, broken: [...document.images].filter(img => !img.complete || !img.naturalWidth).map(img => img.src) }));
+    if (routeProblems.overflow || routeProblems.broken.length) { console.error(name, route, routeProblems); failed = true; }
+  }
   await page.close();
 }
 
