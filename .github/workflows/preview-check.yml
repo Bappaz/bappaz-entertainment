@@ -21,6 +21,10 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: node tests/site-smoke.mjs
       - run: |
+          git rev-parse HEAD
+          grep -o 'shreekant-founder[^" ]*' index.html
+          grep -o 'shreekant-founder[^" ]*' tests/visual-check.mjs
+      - run: |
           python3 -m http.server 8000 >/tmp/bappaz-preview.log 2>&1 &
           node tests/visual-check.mjs
       - uses: actions/upload-artifact@v4
