@@ -14,6 +14,12 @@ for (const [name, width, height] of [['desktop', 1440, 900], ['mobile', 390, 844
   await page.locator('.team').scrollIntoViewIfNeeded();
   await page.locator('footer').scrollIntoViewIfNeeded();
   await page.waitForTimeout(600);
+  const pageHeight = await page.evaluate(() => document.documentElement.scrollHeight);
+  for (let y = 0; y < pageHeight; y += Math.floor(height * .7)) {
+    await page.evaluate(top => window.scrollTo(0, top), y);
+    await page.waitForTimeout(70);
+  }
+  await page.evaluate(() => window.scrollTo(0, 0));
   const result = await page.evaluate(() => ({
     overflow: document.documentElement.scrollWidth > innerWidth + 1,
     images: [...document.images].map(image => ({ src: image.getAttribute('src'), loaded: image.complete && image.naturalWidth > 0 })),
@@ -27,6 +33,7 @@ for (const [name, width, height] of [['desktop', 1440, 900], ['mobile', 390, 844
   await page.screenshot({ path: `preview-shots/${name}.png`, fullPage: true });
   const problems = [
     ...(result.overflow ? ['horizontal overflow'] : []),
+    ...(!result.images.some(image => image.src === 'assets/shreekant-founder-full.jpg' && image.loaded) ? ['updated founder portrait missing'] : []),
     ...result.images.filter(image => !image.loaded).map(image => `image failed: ${image.src}`),
     ...(errors.length ? errors : []),
     ...(name === 'mobile' && (!result.mobileMenuVisible || !result.mobileNavOpens) ? ['mobile navigation failed'] : []),
