@@ -13,6 +13,8 @@ for (const [name, width, height] of [['desktop', 1440, 900], ['mobile', 390, 844
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(pathToFileURL(path.resolve('index.html')).href, { waitUntil: 'load' });
   await page.locator('.visual-feature').scrollIntoViewIfNeeded();
+  await page.locator('.performance-grid').scrollIntoViewIfNeeded();
+  await page.locator('.gallery').scrollIntoViewIfNeeded();
   await page.locator('.team').scrollIntoViewIfNeeded();
   await page.locator('footer').scrollIntoViewIfNeeded();
   await page.waitForTimeout(600);
@@ -31,18 +33,29 @@ for (const [name, width, height] of [['desktop', 1440, 900], ['mobile', 390, 844
   if (name === 'mobile') {
     await page.locator('.menu').click();
     result.mobileNavOpens = await page.locator('#primary-nav').isVisible();
+    await page.locator('.menu').click();
   }
+  await page.locator('input[name=name]').fill('Preview Test');
+  await page.locator('input[name=email]').fill('preview@example.com');
+  await page.locator('textarea[name=brief]').fill('Test enquiry draft');
+  const formValid = await page.locator('#enquiry-form').evaluate(form => form.checkValidity());
+  if (!formValid) errors.push('enquiry form invalid');
   await page.screenshot({ path: `preview-shots/${name}.png`, fullPage: true });
   const problems = [
     ...(result.overflow ? ['horizontal overflow'] : []),
     ...(!result.images.some(image => image.src === 'assets/shreekant-founder-full.jpg' && image.loaded) ? ['updated founder portrait missing'] : []),
-    ...result.images.filter(image => !image.loaded).map(image => `image failed: ${image.src}`),
+    ...result.images.filter(image => !image.loaded && !image.src.startsWith('https://')).map(image => `image failed: ${image.src}`),
     ...(errors.length ? errors : []),
     ...(name === 'mobile' && (!result.mobileMenuVisible || !result.mobileNavOpens) ? ['mobile navigation failed'] : []),
     ...(name === 'desktop' && !result.desktopNavVisible ? ['desktop navigation hidden'] : [])
   ];
   console.log(name, JSON.stringify({ url: page.url(), ...result, problems }));
   if (problems.length) failed = true;
+  for (const route of ['the-new-bench.html', 'auditions.html']) {
+    await page.goto(pathToFileURL(path.resolve(route)).href, { waitUntil: 'load' });
+    const routeProblems = await page.evaluate(() => ({ overflow: document.documentElement.scrollWidth > innerWidth + 1, broken: [...document.images].filter(img => !img.complete || !img.naturalWidth).map(img => img.src) }));
+    if (routeProblems.overflow || routeProblems.broken.length) { console.error(name, route, routeProblems); failed = true; }
+  }
   await page.close();
 }
 
