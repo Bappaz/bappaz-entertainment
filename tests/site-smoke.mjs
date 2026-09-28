@@ -10,7 +10,8 @@ const must = [
 let failed = false;
 for (const token of must) if (!home.includes(token)) { console.error('Missing home requirement:', token); failed = true; }
 for (const name of ['Password', 'The New', 'The Dancing', 'Ishq']) if (!visibleText.includes(name)) { console.error('Missing project:', name); failed = true; }
-if (!home.includes('src="assets/shreekant-founder.jpg"')) { console.error('Founder portrait missing'); failed = true; }
+if (!home.includes('src="assets/shreekant-founder-full.jpg"')) { console.error('Founder portrait missing'); failed = true; }
+for (const path of ['assets/shreekant-founder-full.jpg', 'assets/portrait-editorial-black.jpg', 'assets/portrait-editorial-white.jpg', 'assets/bappaz-logo.jpg']) if (!home.includes(path)) { console.error('Missing image reference:', path); failed = true; }
 if (!audition.includes('ISHQ') || !audition.includes('viewport')) { console.error('Audition route/content requirement missing'); failed = true; }
 if (!home.includes('viewport')) { console.error('Homepage viewport missing'); failed = true; }
 if (failed) process.exit(1);
